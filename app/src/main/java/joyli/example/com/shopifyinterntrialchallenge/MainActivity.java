@@ -19,14 +19,17 @@ import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
     SQLdatabaseActivity myDB;
+    Double sumOfRevenue=0.00;
+    int soldAero=0;
+    String aero = "Aerodynamic Cotton Keyboard";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         myDB = new SQLdatabaseActivity(this);
-        ProgressBar progressBar = (ProgressBar)findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.VISIBLE);
+
+       // progressBar.setVisibility(View.VISIBLE);
 
         Ion.with(this)
                 .load("https://shopicruit.myshopify.com/admin/orders.json?page=1&access_token=c32313df0d0ef512ca64d5b336a0d7c6")
@@ -37,34 +40,43 @@ public class MainActivity extends AppCompatActivity {
                         //data has arrived
                         try {
                             //TextView totalPrice = (TextView) findViewById(R.id.price);
+                            TextView totalRevenue = (TextView)findViewById(R.id.totalRevenue);
+                            TextView AeroQuantity = (TextView)findViewById(R.id.quantityAero);
                             JSONObject json = new JSONObject(result);
                             JSONArray orders = json.getJSONArray("orders");
 
                             for (int i = 0; i < orders.length(); i++) {
                                 JSONObject each = orders.getJSONObject(i);
                                 String price = each.getString("total_price");
-                                Log.v("totalPrice " + i, price);
+                                //Log.v("totalPrice " + i, price);
                                 JSONArray individualItem = each.getJSONArray("line_items");
 
                                 for (int j = 0; j < individualItem.length(); j++) {
                                     JSONObject eachItem = individualItem.getJSONObject(j);
+
+                                    //Log.v(eachItem.getString("title"), "hi");
+
+                                    if (eachItem.getString("title").equals(aero)) {
+                                        String aeroPrice = eachItem.getString("quantity");
+                                        int individualAeroQuantity = Integer.valueOf(aeroPrice);
+                                        soldAero = soldAero+individualAeroQuantity;
+                                        Log.v("sold" + aeroPrice, "hi");
+
+                                    }
                                     String price2 = eachItem.getString("price");
                                     String nameOfItem = eachItem.getString("name");
                                     String quantity = eachItem.getString("quantity");
-                                    Float revenue = Float.valueOf(price2) * Float.valueOf(quantity);
-
+                                    Double revenue = Math.round(Double.valueOf(price2) * Double.valueOf(quantity)*100.0)/100.0;
+                                    sumOfRevenue = sumOfRevenue + revenue;
+                                    Log.v("hi "+ revenue, "hello");
+                                    //Float newRevenue2 = (float)revenue;
                                     String newRevenue = revenue.toString();
-                                    if (newRevenue.length() != 0) {
-                                        AddData(newRevenue);
-
-                                    } else {
-                                        Toast.makeText(MainActivity.this, "ERROR!", Toast.LENGTH_LONG).show();
-                                    }
-
-
-                                    Log.v("quantity " + j, quantity);
                                 }
                             }
+                            sumOfRevenue=Math.round(sumOfRevenue*100.0)/100.0;
+                            totalRevenue.setText("Total Order Revenue: " + sumOfRevenue.toString());
+                            AeroQuantity.setText("Number of sold Aerodynamic Cotton Keyboards: "+ String.valueOf(soldAero));
+
 
                         } catch (JSONException e1) {
                             e1.printStackTrace();
@@ -74,20 +86,10 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
-        progressBar.setVisibility(View.INVISIBLE);
-
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Intent deadPixel = new Intent(getApplicationContext(),ViewList.class);
-                startActivity(deadPixel);
-            }
-        }, 5000);
-
     }
 
-    public void AddData(String newEntry1) {
-        boolean insertData = myDB.addData(newEntry1);
+    public void AddData(String newEntry1, String newEntry2) {
+        boolean insertData = myDB.addData(newEntry1, newEntry2);
 
         if (insertData == true) {
 

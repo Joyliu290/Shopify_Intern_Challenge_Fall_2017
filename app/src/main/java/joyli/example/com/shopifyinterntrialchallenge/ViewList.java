@@ -43,7 +43,7 @@ public class ViewList extends AppCompatActivity {
 
         //Header for ListView
         TextView textView = new TextView(this);
-        textView.setText("Product Name                              Revenue"); //sets the header
+        textView.setText("Product Name                                 Revenue"); //sets the header
         listview.addHeaderView(textView); //adds the header
 
         //populate an ArrayList<String> from the database and then view it
@@ -57,13 +57,12 @@ public class ViewList extends AppCompatActivity {
         else {
             int i =0;
             while (data.moveToNext()) { //returns a boolean value
-
-                user = new User(data.getString(0), data.getString(1));
-
+                //position 1 is the product name, position 2 is the revenue
+                user = new User(data.getString(1), data.getString(2));
                 userList.add(i, user);
 
-                System.out.println(data.getString(0)+ "" + data.getString(1));
-                System.out.println(userList.get(i).getEntry());
+                //System.out.println(data.getString(0)+ "" + data.getString(1));
+                //System.out.println(userList.get(i).getEntry());
                 i++;
             }
 
